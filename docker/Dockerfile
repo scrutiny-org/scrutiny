@@ -48,4 +48,4 @@ RUN chmod +x /opt/scrutiny/bin/scrutiny && \
     chmod -R ugo+rwx /opt/scrutiny/config
 
 
-CMD ["/init"]
+ENTRYPOINT ["/init"]
