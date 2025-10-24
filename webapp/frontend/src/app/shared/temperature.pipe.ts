@@ -29,7 +29,16 @@ export class TemperaturePipe implements PipeTransform {
     }
 
   transform(celsiusTemp: number, unit = 'celsius', includeUnits = false): number|string {
-        return TemperaturePipe.formatTemperature(celsiusTemp, unit, includeUnits)
+        let temperature;
+        switch (unit) {
+            case 'celsius':
+                temperature = celsiusTemp;
+                break
+            case 'fahrenheit':
+                temperature = TemperaturePipe.celsiusToFahrenheit(celsiusTemp)
+                break
+        }
+        return TemperaturePipe.formatTemperature(temperature, unit, includeUnits)
   }
 
 }
