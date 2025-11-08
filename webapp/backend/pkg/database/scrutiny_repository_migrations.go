@@ -9,6 +9,8 @@ import (
 	"github.com/analogj/scrutiny/webapp/backend/pkg/database/migrations/m20220503120000"
 	"github.com/analogj/scrutiny/webapp/backend/pkg/database/migrations/m20220509170100"
 	"github.com/analogj/scrutiny/webapp/backend/pkg/database/migrations/m20220716214900"
+	"github.com/analogj/scrutiny/webapp/backend/pkg/database/migrations/m20250221084400"
+	"github.com/analogj/scrutiny/webapp/backend/pkg/database/migrations/m20251108044508"
 	"github.com/analogj/scrutiny/webapp/backend/pkg/models"
 	"github.com/analogj/scrutiny/webapp/backend/pkg/models/collector"
 	"github.com/analogj/scrutiny/webapp/backend/pkg/models/measurements"
@@ -367,6 +369,54 @@ func (sr *scrutinyRepository) Migrate(ctx context.Context) error {
 					},
 				}
 				return tx.Create(&defaultSettings).Error
+			},
+		},
+		{
+			ID: "m20231123123300", // add repeat_notifications setting.
+			Migrate: func(tx *gorm.DB) error {
+				//add repeat_notifications setting default.
+				var defaultSettings = []m20220716214900.Setting{
+					{
+						SettingKeyName:        "metrics.repeat_notifications",
+						SettingKeyDescription: "Whether to repeat all notifications or just when values change (true | false)",
+						SettingDataType:       "bool",
+						SettingValueBool:      true,
+					},
+				}
+				return tx.Create(&defaultSettings).Error
+			},
+		},
+		{
+			ID: "m20240722082740", // add powered_on_hours_unit setting.
+			Migrate: func(tx *gorm.DB) error {
+				//add powered_on_hours_unit setting default.
+				var defaultSettings = []m20220716214900.Setting{
+					{
+						SettingKeyName:        "powered_on_hours_unit",
+						SettingKeyDescription: "Presentation format for device powered on time ('humanize' | 'device_hours')",
+						SettingDataType:       "string",
+						SettingValueString:    "humanize",
+					},
+				}
+				return tx.Create(&defaultSettings).Error
+			},
+		},
+		{
+			ID: "m20250221084400", // add archived to device data
+			Migrate: func(tx *gorm.DB) error {
+
+				//migrate the device database.
+				// adding column (archived)
+				return tx.AutoMigrate(m20250221084400.Device{})
+			},
+		},
+		{
+			ID: "m20251108044508", // add archived to device data
+			Migrate: func(tx *gorm.DB) error {
+
+				//migrate the device database.
+				// adding column (muted)
+				return tx.AutoMigrate(m20251108044508.Device{})
 			},
 		},
 	})

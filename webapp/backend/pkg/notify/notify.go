@@ -36,6 +36,11 @@ func ShouldNotify(device models.Device, smartAttrs measurements.Smart, statusThr
 		return false
 	}
 
+	// If the device is muted, skip notification regardless of status
+	if device.Muted {
+		return false
+	}
+
 	//TODO: cannot check for warning notifyLevel yet.
 
 	// setup constants for comparison
