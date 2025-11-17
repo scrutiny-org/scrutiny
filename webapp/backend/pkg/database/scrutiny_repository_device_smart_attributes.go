@@ -140,34 +140,70 @@ func (sr *scrutinyRepository) aggregateSmartAttributesQuery(wwn string, duration
 
 	nestedDurationKeys := sr.lookupNestedDurationKeys(durationKey)
 
+	if len(nestedDurationKeys) == 1 {
+		//there's only one bucket being queried, no need to union, just aggregate the dataset and return
+		subqueryParts := []string{
+			sr.generateSmartAttributesSubquery(wwn, nestedDurationKeys[0], 0, 0, attributes),
+			fmt.Sprintf(`%sData`, nestedDurationKeys[0]),
+			`|> sort(columns: ["_time"], desc: true)`,
+		}
+		if selectEntries > 0 {
+			// Use limit() instead of tail() after desc sort to get the newest entries
+			subqueryParts = append(subqueryParts, fmt.Sprintf(`|> limit(n: %d, offset: %d)`, selectEntries, selectEntriesOffset))
+		}
+		subqueryParts = append(subqueryParts, `|> yield()`)
+		partialQueryStr = append(partialQueryStr, subqueryParts...)
+		return strings.Join(partialQueryStr, "\n")
+	}
+
+	subQueries := []string{}
 	subQueryNames := []string{}
 	for _, nestedDurationKey := range nestedDurationKeys {
 		bucketName := sr.lookupBucketName(nestedDurationKey)
 		durationRange := sr.lookupDuration(nestedDurationKey)
 
 		subQueryNames = append(subQueryNames, fmt.Sprintf(`%sData`, nestedDurationKey))
-		partialQueryStr = append(partialQueryStr, []string{
-			fmt.Sprintf(`%sData = from(bucket: "%s")`, nestedDurationKey, bucketName),
-			fmt.Sprintf(`|> range(start: %s, stop: %s)`, durationRange[0], durationRange[1]),
-			`|> filter(fn: (r) => r["_measurement"] == "smart" )`,
-			fmt.Sprintf(`|> filter(fn: (r) => r["device_wwn"] == "%s" )`, wwn),
-			"|> schema.fieldsAsCols()",
-		}...)
+		if selectEntries > 0 {
+			// We only need the last `n + offset` # of entries from each table to guarantee we can
+			// get the last `n` # of entries starting from `offset` of the union
+			subQueries = append(subQueries, sr.generateSmartAttributesSubquery(wwn, nestedDurationKey, selectEntries+selectEntriesOffset, 0, attributes))
+		} else {
+			subQueries = append(subQueries, sr.generateSmartAttributesSubquery(wwn, nestedDurationKey, 0, 0, attributes))
+		}
+	}
+	partialQueryStr = append(partialQueryStr, subQueries...)
+	partialQueryStr = append(partialQueryStr, []string{
+		fmt.Sprintf("union(tables: [%s])", strings.Join(subQueryNames, ", ")),
+		`|> group()`,
+		`|> sort(columns: ["_time"], desc: true)`,
+	}...)
+	if selectEntries > 0 {
+		// Use limit() instead of tail() after desc sort to get the newest entries
+		// tail() would get the oldest entries from the end, but we want the newest from the beginning
+		partialQueryStr = append(partialQueryStr, fmt.Sprintf(`|> limit(n: %d, offset: %d)`, selectEntries, selectEntriesOffset))
+	}
+	partialQueryStr = append(partialQueryStr, `|> yield(name: "last")`)
+
+	return strings.Join(partialQueryStr, "\n")
+}
+
+func (sr *scrutinyRepository) generateSmartAttributesSubquery(wwn string, durationKey string, selectEntries int, selectEntriesOffset int, attributes []string) string {
+	bucketName := sr.lookupBucketName(durationKey)
+	durationRange := sr.lookupDuration(durationKey)
+
+	partialQueryStr := []string{
+		fmt.Sprintf(`%sData = from(bucket: "%s")`, durationKey, bucketName),
+		fmt.Sprintf(`|> range(start: %s, stop: %s)`, durationRange[0], durationRange[1]),
+		`|> filter(fn: (r) => r["_measurement"] == "smart" )`,
+		fmt.Sprintf(`|> filter(fn: (r) => r["device_wwn"] == "%s" )`, wwn),
 	}
 
-	if len(subQueryNames) == 1 {
-		//there's only one bucket being queried, no need to union, just aggregate the dataset and return
-		partialQueryStr = append(partialQueryStr, []string{
-			subQueryNames[0],
-			`|> yield()`,
-		}...)
-	} else {
-		partialQueryStr = append(partialQueryStr, []string{
-			fmt.Sprintf("union(tables: [%s])", strings.Join(subQueryNames, ", ")),
-			`|> sort(columns: ["_time"], desc: false)`,
-			`|> yield(name: "last")`,
-		}...)
+	partialQueryStr = append(partialQueryStr, `|> aggregateWindow(every: 1d, fn: last, createEmpty: false)`)
+
+	if selectEntries > 0 {
+		partialQueryStr = append(partialQueryStr, fmt.Sprintf(`|> tail(n: %d, offset: %d)`, selectEntries, selectEntriesOffset))
 	}
+	partialQueryStr = append(partialQueryStr, "|> schema.fieldsAsCols()")
 
 	return strings.Join(partialQueryStr, "\n")
 }
