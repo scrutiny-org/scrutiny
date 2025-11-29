@@ -1,0 +1,23 @@
+# CODEOWNERS - Defines code ownership for automatic PR review requests
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repo
+* @scrutiny-org
+
+# Frontend (Angular)
+/webapp/frontend/ @scrutiny-org
+
+# Backend (Go)
+/webapp/backend/ @scrutiny-org
+
+# Collector
+/collector/ @scrutiny-org
+
+# Docker and CI/CD
+/docker/ @scrutiny-org
+/.github/ @scrutiny-org
+Makefile @scrutiny-org
+
+# Documentation
+*.md @scrutiny-org
+/docs/ @scrutiny-org
