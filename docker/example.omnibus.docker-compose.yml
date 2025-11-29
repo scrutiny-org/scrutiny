@@ -3,7 +3,7 @@ version: '3.5'
 services:
   scrutiny:
     container_name: scrutiny
-    image: ghcr.io/analogj/scrutiny:master-omnibus
+    image: ghcr.io/scrutiny-org/scrutiny:latest-omnibus
     cap_add:
       - SYS_RAWIO
     ports:

@@ -15,7 +15,8 @@ services:
 
 
   web:
-    image: 'ghcr.io/analogj/scrutiny:master-web'
+    restart: unless-stopped
+    image: 'ghcr.io/scrutiny-org/scrutiny:latest-web'
     ports:
       - '8080:8080'
     volumes:
@@ -33,7 +34,8 @@ services:
       start_period: 10s
 
   collector:
-    image: 'ghcr.io/analogj/scrutiny:master-collector'
+    restart: unless-stopped
+    image: 'ghcr.io/scrutiny-org/scrutiny:latest-collector'
     cap_add:
       - SYS_RAWIO
     volumes:
