@@ -135,6 +135,14 @@
                         <div>{{smart_results[0]?.temp | temperature:config.temperature_unit:true}}</div>
                         <div class="text-secondary text-md">Temperature</div>
                     </div>
+                    <div *ngIf="getTBsWritten() !== null" class="my-2 col-span-2 lt-md:col-span-1">
+                        <div>{{getTBsWritten() | number:'1.2-2'}} TB</div>
+                        <div class="text-secondary text-md">TBs Written</div>
+                    </div>
+                    <div *ngIf="getTBsRead() !== null" class="my-2 col-span-2 lt-md:col-span-1">
+                        <div>{{getTBsRead() | number:'1.2-2'}} TB</div>
+                        <div class="text-secondary text-md">TBs Read</div>
+                    </div>
                 </div>
             </treo-card>
         </div>
