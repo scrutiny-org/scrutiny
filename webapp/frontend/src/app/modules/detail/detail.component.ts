@@ -482,7 +482,7 @@ export class DetailComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     /**
-     * Calculate TBs written from LBAs (ATA) or Data Units (NVMe)
+     * Calculate TBs written from LBAs
      * Uses logical block size from smartctl data (defaults to 512 bytes if not available)
      */
     getTBsWritten(): number | null {
@@ -490,41 +490,23 @@ export class DetailComponent implements OnInit, AfterViewInit, OnDestroy {
             return null;
         }
 
-        if (this.isNvme()) {
-            // NVMe: data_units_written is in thousands of 512-byte units
-            const dataUnitsWrittenAttr = this.smart_results[0]?.attrs?.['data_units_written'];
-            if (!dataUnitsWrittenAttr || dataUnitsWrittenAttr.value === undefined || dataUnitsWrittenAttr.value === null) {
-                return null;
-            }
-
-            // NVMe data units are in thousands (1000 units of 512 bytes each)
-            const dataUnits = dataUnitsWrittenAttr.value;
-            const tbsWritten = (dataUnits * 1000 * 512) / (1024 * 1024 * 1024 * 1024);
-
-            return tbsWritten;
-        } else if (this.isAta()) {
-            // ATA: attribute 241 (Total LBAs Written) or 246 (Total_LBAs_Written - used by some SSDs like Crucial)
-            const lbaWrittenAttr = this.smart_results[0]?.attrs?.['241'] || this.smart_results[0]?.attrs?.['246'];
-            if (!lbaWrittenAttr || lbaWrittenAttr.raw_value === undefined || lbaWrittenAttr.raw_value === null) {
-                return null;
-            }
-
-            // Use logical block size from smartctl data, default to 512 bytes if not available
-            // Note: logical_block_size may not be in SmartModel yet, so we default to 512
-            const blockSize = (this.smart_results[0] as any)?.logical_block_size || 512;
-            const lbaWritten = lbaWrittenAttr.raw_value;
-
-            // Convert LBAs to TBs: (LBAs * block_size) / (1024^4)
-            const tbsWritten = (lbaWritten * blockSize) / (1024 * 1024 * 1024 * 1024);
-
-            return tbsWritten;
+        const lbaWrittenAttr = this.smart_results[0]?.attrs?.['241'];
+        if (!lbaWrittenAttr || lbaWrittenAttr.raw_value === undefined || lbaWrittenAttr.raw_value === null) {
+            return null;
         }
 
-        return null;
+        // Use logical block size from smartctl data, default to 512 bytes if not available
+        const blockSize = this.smart_results[0]?.logical_block_size || 512;
+        const lbaWritten = lbaWrittenAttr.raw_value;
+
+        // Convert LBAs to TBs: (LBAs * block_size) / (1024^4)
+        const tbsWritten = (lbaWritten * blockSize) / (1024 * 1024 * 1024 * 1024);
+
+        return tbsWritten;
     }
 
     /**
-     * Calculate TBs read from LBAs (ATA) or Data Units (NVMe)
+     * Calculate TBs read from LBAs
      * Uses logical block size from smartctl data (defaults to 512 bytes if not available)
      */
     getTBsRead(): number | null {
@@ -532,37 +514,19 @@ export class DetailComponent implements OnInit, AfterViewInit, OnDestroy {
             return null;
         }
 
-        if (this.isNvme()) {
-            // NVMe: data_units_read is in thousands of 512-byte units
-            const dataUnitsReadAttr = this.smart_results[0]?.attrs?.['data_units_read'];
-            if (!dataUnitsReadAttr || dataUnitsReadAttr.value === undefined || dataUnitsReadAttr.value === null) {
-                return null;
-            }
-
-            // NVMe data units are in thousands (1000 units of 512 bytes each)
-            const dataUnits = dataUnitsReadAttr.value;
-            const tbsRead = (dataUnits * 1000 * 512) / (1024 * 1024 * 1024 * 1024);
-
-            return tbsRead;
-        } else if (this.isAta()) {
-            // ATA: attribute 242 (Total LBAs Read)
-            const lbaReadAttr = this.smart_results[0]?.attrs?.['242'];
-            if (!lbaReadAttr || lbaReadAttr.raw_value === undefined || lbaReadAttr.raw_value === null) {
-                return null;
-            }
-
-            // Use logical block size from smartctl data, default to 512 bytes if not available
-            // Note: logical_block_size may not be in SmartModel yet, so we default to 512
-            const blockSize = (this.smart_results[0] as any)?.logical_block_size || 512;
-            const lbaRead = lbaReadAttr.raw_value;
-
-            // Convert LBAs to TBs: (LBAs * block_size) / (1024^4)
-            const tbsRead = (lbaRead * blockSize) / (1024 * 1024 * 1024 * 1024);
-
-            return tbsRead;
+        const lbaReadAttr = this.smart_results[0]?.attrs?.['242'];
+        if (!lbaReadAttr || lbaReadAttr.raw_value === undefined || lbaReadAttr.raw_value === null) {
+            return null;
         }
 
-        return null;
+        // Use logical block size from smartctl data, default to 512 bytes if not available
+        const blockSize = this.smart_results[0]?.logical_block_size || 512;
+        const lbaRead = lbaReadAttr.raw_value;
+
+        // Convert LBAs to TBs: (LBAs * block_size) / (1024^4)
+        const tbsRead = (lbaRead * blockSize) / (1024 * 1024 * 1024 * 1024);
+
+        return tbsRead;
     }
 
 }
