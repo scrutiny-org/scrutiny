@@ -8,7 +8,7 @@ require (
 	github.com/fatih/color v1.15.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/glebarez/sqlite v1.4.5
-	github.com/go-gormigrate/gormigrate/v2 v2.0.0
+	github.com/go-gormigrate/gormigrate/v2 v2.1.5
 	github.com/golang/mock v1.6.0
 	github.com/influxdata/influxdb-client-go/v2 v2.9.0
 	github.com/jaypipes/ghw v0.6.1
@@ -19,8 +19,8 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli/v2 v2.2.0
-	golang.org/x/sync v0.3.0
-	gorm.io/gorm v1.23.5
+	golang.org/x/sync v0.11.0
+	gorm.io/gorm v1.26.1
 )
 
 require (
@@ -44,7 +44,7 @@ require (
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
 	github.com/jaypipes/pcidb v0.5.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.4 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/kvz/logstreamer v0.0.0-20201023134116-02d20f4338f5 // indirect
@@ -75,7 +75,7 @@ require (
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/term v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
