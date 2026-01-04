@@ -80,23 +80,23 @@ docker run -p 8080:8080 -p 8086:8086 --restart unless-stopped \
   --device=/dev/sda \
   --device=/dev/sdb \
   --name scrutiny \
-  ghcr.io/starosdev/scrutiny:latest-omnibus
+  ghcr.io/scrutiny-org/scrutiny:latest-omnibus
 ```
 
 - `/run/udev` is necessary to provide the Scrutiny collector with access to your device metadata
 - `--cap-add SYS_RAWIO` is necessary to allow `smartctl` permission to query your device SMART data
     - NOTE: If you have **NVMe** drives, you must add `--cap-add SYS_ADMIN` as well.
 - `--device` entries are required to ensure that your hard disk devices are accessible within the container.
-- `ghcr.io/starosdev/scrutiny:latest-omnibus` is an omnibus image, containing both the webapp server (frontend & api) as well as the S.M.A.R.T metric collector. (see below)
+- `ghcr.io/scrutiny-org/scrutiny:latest-omnibus` is an omnibus image, containing both the webapp server (frontend & api) as well as the S.M.A.R.T metric collector. (see below)
 
 ### Hub/Spoke Deployment
 
 In addition to the Omnibus image (available under the `latest` tag) you can deploy in Hub/Spoke mode, which requires 3
 other Docker images:
 
-- `ghcr.io/starosdev/scrutiny:latest-collector` - Contains the Scrutiny data collector, `smartctl` binary and cron-like
+- `ghcr.io/scrutiny-org/scrutiny:latest-collector` - Contains the Scrutiny data collector, `smartctl` binary and cron-like
   scheduler. You can run one collector on each server.
-- `ghcr.io/starosdev/scrutiny:latest-web` - Contains the Web UI and API. Only one container necessary
+- `ghcr.io/scrutiny-org/scrutiny:latest-web` - Contains the Web UI and API. Only one container necessary
 - `influxdb:2.2` - InfluxDB image, used by the Web container to persist SMART data. Only one container necessary.
   See [docs/TROUBLESHOOTING_INFLUXDB.md](./docs/TROUBLESHOOTING_INFLUXDB.md)
 
@@ -111,7 +111,7 @@ docker run -p 8086:8086 --restart unless-stopped \
 docker run -p 8080:8080 --restart unless-stopped \
   -v `pwd`/scrutiny:/opt/scrutiny/config \
   --name scrutiny-web \
-  ghcr.io/starosdev/scrutiny:latest-web
+  ghcr.io/scrutiny-org/scrutiny:latest-web
 
 docker run --restart unless-stopped \
   -v /run/udev:/run/udev:ro \
@@ -120,7 +120,7 @@ docker run --restart unless-stopped \
   --device=/dev/sdb \
   -e COLLECTOR_API_ENDPOINT=http://SCRUTINY_WEB_IPADDRESS:8080 \
   --name scrutiny-collector \
-  ghcr.io/starosdev/scrutiny:latest-collector
+  ghcr.io/scrutiny-org/scrutiny:latest-collector
 ```
 
 ## Manual Installation (without-Docker)
@@ -157,7 +157,7 @@ Neither file is required, however if provided, it allows you to configure how Sc
 
 ## Cron Schedule
 Unfortunately the Cron schedule cannot be configured via the `collector.yaml` (as the collector binary needs to be triggered by a scheduler/cron).
-However, if you are using the official `ghcr.io/starosdev/scrutiny:latest-collector` or `ghcr.io/starosdev/scrutiny:latest-omnibus` docker images,
+However, if you are using the official `ghcr.io/scrutiny-org/scrutiny:latest-collector` or `ghcr.io/scrutiny-org/scrutiny:latest-omnibus` docker images,
 you can use the `COLLECTOR_CRON_SCHEDULE` environmental variable to override the default cron schedule (daily @ midnight - `0 0 * * *`).
 
 `docker run -e COLLECTOR_CRON_SCHEDULE="0 0 * * *" ...`
