@@ -5,19 +5,19 @@
 * @scrutiny-org/owners
 
 # Frontend (Angular)
-/webapp/frontend/ @scrutiny-org
+/webapp/frontend/ @scrutiny-org/owners
 
 # Backend (Go)
-/webapp/backend/ @scrutiny-org
+/webapp/backend/ @scrutiny-org/owners
 
 # Collector
-/collector/ @scrutiny-org
+/collector/ @scrutiny-org/owners
 
 # Docker and CI/CD
-/docker/ @scrutiny-org
-/.github/ @scrutiny-org
-Makefile @scrutiny-org
+/docker/ @scrutiny-org/owners
+/.github/ @scrutiny-org/owners
+Makefile @scrutiny-org/owners
 
 # Documentation
-*.md @scrutiny-org
-/docs/ @scrutiny-org
+*.md @scrutiny-org/owners
+/docs/ @scrutiny-org/owners
