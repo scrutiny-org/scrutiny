@@ -6,25 +6,22 @@ import {formatNumber} from '@angular/common';
 })
 export class TemperaturePipe implements PipeTransform {
     static celsiusToFahrenheit(celsiusTemp: number): number {
-        return celsiusTemp * 9.0 / 5.0 + 32;
+        return celsiusTemp * 9/5 + 32;
     }
-    static formatTemperature(celsiusTemp: number, unit: string, includeUnits: boolean): number|string {
-        let convertedTemp
-        let convertedUnitSuffix
+    static formatTemperature(temp: number, unit: string, includeUnits: boolean): number|string {
+        let unitSuffix
         switch (unit) {
             case 'celsius':
-                convertedTemp = celsiusTemp
-                convertedUnitSuffix = '°C'
+                unitSuffix = '°C'
                 break
             case 'fahrenheit':
-                convertedTemp = TemperaturePipe.celsiusToFahrenheit(celsiusTemp)
-                convertedUnitSuffix = '°F'
+                unitSuffix = '°F'
                 break
         }
         if(includeUnits){
-            return formatNumber(convertedTemp, 'en-US') + convertedUnitSuffix
+            return formatNumber(temp, 'en-US') + unitSuffix
         } else {
-            return formatNumber(convertedTemp, 'en-US',)
+            return formatNumber(temp, 'en-US',)
         }
     }
 
