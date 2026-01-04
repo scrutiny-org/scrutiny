@@ -21,6 +21,7 @@ type Smart struct {
 	Temp            int64 `json:"temp"`
 	PowerOnHours    int64 `json:"power_on_hours"`
 	PowerCycleCount int64 `json:"power_cycle_count"`
+	LogicalBlockSize int64 `json:"logical_block_size"` //logical block size in bytes (typically 512 or 4096)
 
 	//Attributes (fields)
 	Attributes map[string]SmartAttribute `json:"attrs"`
@@ -36,9 +37,10 @@ func (sm *Smart) Flatten() (tags map[string]string, fields map[string]interface{
 	}
 
 	fields = map[string]interface{}{
-		"temp":              sm.Temp,
-		"power_on_hours":    sm.PowerOnHours,
-		"power_cycle_count": sm.PowerCycleCount,
+		"temp":               sm.Temp,
+		"power_on_hours":     sm.PowerOnHours,
+		"power_cycle_count":  sm.PowerCycleCount,
+		"logical_block_size": sm.LogicalBlockSize,
 	}
 
 	for _, attr := range sm.Attributes {
@@ -80,11 +82,14 @@ func NewSmartFromInfluxDB(attrs map[string]interface{}) (*Smart, error) {
 				log.Printf("unable to parse power_on_hours information: %v", val)
 			}
 		case "power_cycle_count":
-			powerCycle, powerCycleOk := val.(int64)
-			if powerCycleOk {
-				sm.PowerCycleCount = powerCycle
-			} else {
-				log.Printf("unable to parse power_cycle_count information: %v", val)
+			sm.PowerCycleCount = val.(int64)
+		case "logical_block_size":
+			if intVal, ok := val.(int64); ok {
+				sm.LogicalBlockSize = intVal
+			} else if intVal, ok := val.(int); ok {
+				sm.LogicalBlockSize = int64(intVal)
+			} else if floatVal, ok := val.(float64); ok {
+				sm.LogicalBlockSize = int64(floatVal)
 			}
 		default:
 			// this key is unknown.
@@ -126,6 +131,13 @@ func (sm *Smart) FromCollectorSmartInfo(wwn string, info collector.SmartInfo) er
 	sm.Temp = info.Temperature.Current
 	sm.PowerCycleCount = info.PowerCycleCount
 	sm.PowerOnHours = info.PowerOnTime.Hours
+	// Store logical block size from smartctl (default to 512 if not provided)
+	if info.LogicalBlockSize > 0 {
+		sm.LogicalBlockSize = int64(info.LogicalBlockSize)
+	} else {
+		// Default to 512 bytes if not specified (standard for most HDDs)
+		sm.LogicalBlockSize = int64(512)
+	}
 	if !info.SmartStatus.Passed {
 		sm.Status = pkg.DeviceStatusSet(sm.Status, pkg.DeviceStatusFailedSmart)
 	}

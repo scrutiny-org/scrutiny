@@ -22,6 +22,7 @@ func TestSmart_Flatten(t *testing.T) {
 		Temp:            50,
 		PowerOnHours:    10,
 		PowerCycleCount: 10,
+		LogicalBlockSize: 512,
 		Attributes:      nil,
 		Status:          0,
 	}
@@ -31,7 +32,7 @@ func TestSmart_Flatten(t *testing.T) {
 
 	//assert
 	require.Equal(t, map[string]string{"device_protocol": "ATA", "device_wwn": "test-wwn"}, tags)
-	require.Equal(t, map[string]interface{}{"power_cycle_count": int64(10), "power_on_hours": int64(10), "temp": int64(50)}, fields)
+	require.Equal(t, map[string]interface{}{"logical_block_size": int64(512), "power_cycle_count": int64(10), "power_on_hours": int64(10), "temp": int64(50)}, fields)
 }
 
 func TestSmart_Flatten_ATA(t *testing.T) {
@@ -44,6 +45,7 @@ func TestSmart_Flatten_ATA(t *testing.T) {
 		Temp:            50,
 		PowerOnHours:    10,
 		PowerCycleCount: 10,
+		LogicalBlockSize: 512,
 		Status:          0,
 		Attributes: map[string]measurements.SmartAttribute{
 			"1": &measurements.SmartAtaAttribute{
@@ -97,6 +99,7 @@ func TestSmart_Flatten_ATA(t *testing.T) {
 		"attr.2.when_failed":       "",
 		"attr.2.worst":             int64(135),
 
+		"logical_block_size": int64(512),
 		"power_cycle_count": int64(10),
 		"power_on_hours":    int64(10),
 		"temp":              int64(50),
@@ -113,6 +116,7 @@ func TestSmart_Flatten_SCSI(t *testing.T) {
 		Temp:            50,
 		PowerOnHours:    10,
 		PowerCycleCount: 10,
+		LogicalBlockSize: 512,
 		Status:          0,
 		Attributes: map[string]measurements.SmartAttribute{
 			"read_errors_corrected_by_eccfast": &measurements.SmartScsiAttribute{
@@ -135,6 +139,7 @@ func TestSmart_Flatten_SCSI(t *testing.T) {
 		"attr.read_errors_corrected_by_eccfast.thresh":            int64(0),
 		"attr.read_errors_corrected_by_eccfast.transformed_value": int64(0),
 		"attr.read_errors_corrected_by_eccfast.value":             int64(300357663),
+		"logical_block_size": int64(512),
 		"power_cycle_count": int64(10),
 		"power_on_hours":    int64(10),
 		"temp":              int64(50)},
@@ -151,6 +156,7 @@ func TestSmart_Flatten_NVMe(t *testing.T) {
 		Temp:            50,
 		PowerOnHours:    10,
 		PowerCycleCount: 10,
+		LogicalBlockSize: 512,
 		Status:          0,
 		Attributes: map[string]measurements.SmartAttribute{
 			"available_spare": &measurements.SmartNvmeAttribute{
@@ -173,6 +179,7 @@ func TestSmart_Flatten_NVMe(t *testing.T) {
 		"attr.available_spare.thresh":            int64(0),
 		"attr.available_spare.transformed_value": int64(0),
 		"attr.available_spare.value":             int64(100),
+		"logical_block_size":                     int64(512),
 		"power_cycle_count":                      int64(10),
 		"power_on_hours":                         int64(10),
 		"temp":                                   int64(50)}, fields)
@@ -496,7 +503,7 @@ func TestFromCollectorSmartInfo_Scsi(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "WWN-test", smartMdl.DeviceWWN)
 	require.Equal(t, pkg.DeviceStatusPassed, smartMdl.Status)
-	require.Equal(t, 13, len(smartMdl.Attributes))
+	require.Equal(t, 14, len(smartMdl.Attributes))
 
 	require.Equal(t, int64(56), smartMdl.Attributes["scsi_grown_defect_list"].(*measurements.SmartScsiAttribute).Value)
 	require.Equal(t, int64(300357663), smartMdl.Attributes["read_errors_corrected_by_eccfast"].(*measurements.SmartScsiAttribute).Value) //total_errors_corrected

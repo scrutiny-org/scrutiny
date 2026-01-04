@@ -609,6 +609,7 @@ func m20201107210306_FromPreInfluxDBSmartResultsCreatePostInfluxDBSmartResults(d
 				TotalUncorrectedErrors           int64  `json:"total_uncorrected_errors"`
 			}{},
 		}
+		postScsiTemperatureData := make(map[string]collector.ScsiTemperatureData)
 
 		for _, preScsiAttribute := range preSmartResult.ScsiAttributes {
 			switch preScsiAttribute.AttributeId {
@@ -638,9 +639,22 @@ func m20201107210306_FromPreInfluxDBSmartResultsCreatePostInfluxDBSmartResults(d
 				postScsiErrorCounterLog.Write.CorrectionAlgorithmInvocations = int64(preScsiAttribute.Value)
 			case "write.total_uncorrected_errors":
 				postScsiErrorCounterLog.Write.TotalUncorrectedErrors = int64(preScsiAttribute.Value)
+			case "temperature":
+				// Construct temperature data map - the function expects "temperature_1" as the key
+				postScsiTemperatureData["temperature_1"] = collector.ScsiTemperatureData{
+					Current: int64(preScsiAttribute.Value),
+				}
 			}
 		}
-		postDeviceSmartData.ProcessScsiSmartInfo(postScsiGrownDefectList, postScsiErrorCounterLog)
+
+		// If no temperature attribute found but Temp field exists, use it
+		if len(postScsiTemperatureData) == 0 && preSmartResult.Temp > 0 {
+			postScsiTemperatureData["temperature_1"] = collector.ScsiTemperatureData{
+				Current: preSmartResult.Temp,
+			}
+		}
+
+		postDeviceSmartData.ProcessScsiSmartInfo(postScsiGrownDefectList, postScsiErrorCounterLog, postScsiTemperatureData)
 	} else {
 		return fmt.Errorf("Unknown device protocol: %s", preDevice.DeviceProtocol), postDeviceSmartData
 	}
