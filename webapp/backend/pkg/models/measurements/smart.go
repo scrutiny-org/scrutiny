@@ -22,7 +22,7 @@ type Smart struct {
 	Temp            int64 `json:"temp"`
 	PowerOnHours    int64 `json:"power_on_hours"`
 	PowerCycleCount int64 `json:"power_cycle_count"`
-	LogicalBlockSize int  `json:"logical_block_size"` //logical block size in bytes (typically 512 or 4096)
+	LogicalBlockSize int64 `json:"logical_block_size"` //logical block size in bytes (typically 512 or 4096)
 
 	//Attributes (fields)
 	Attributes map[string]SmartAttribute `json:"attrs"`
@@ -75,11 +75,11 @@ func NewSmartFromInfluxDB(attrs map[string]interface{}) (*Smart, error) {
 			sm.PowerCycleCount = val.(int64)
 		case "logical_block_size":
 			if intVal, ok := val.(int64); ok {
-				sm.LogicalBlockSize = int(intVal)
-			} else if intVal, ok := val.(int); ok {
 				sm.LogicalBlockSize = intVal
+			} else if intVal, ok := val.(int); ok {
+				sm.LogicalBlockSize = int64(intVal)
 			} else if floatVal, ok := val.(float64); ok {
-				sm.LogicalBlockSize = int(floatVal)
+				sm.LogicalBlockSize = int64(floatVal)
 			}
 		default:
 			// this key is unknown.
@@ -129,10 +129,10 @@ func (sm *Smart) FromCollectorSmartInfo(cfg config.Interface, wwn string, info c
 	sm.PowerOnHours = info.PowerOnTime.Hours
 	// Store logical block size from smartctl (default to 512 if not provided)
 	if info.LogicalBlockSize > 0 {
-		sm.LogicalBlockSize = info.LogicalBlockSize
+		sm.LogicalBlockSize = int64(info.LogicalBlockSize)
 	} else {
 		// Default to 512 bytes if not specified (standard for most HDDs)
-		sm.LogicalBlockSize = 512
+		sm.LogicalBlockSize = int64(512)
 	}
 	if !info.SmartStatus.Passed {
 		sm.Status = pkg.DeviceStatusSet(sm.Status, pkg.DeviceStatusFailedSmart)
