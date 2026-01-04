@@ -1,6 +1,6 @@
 module github.com/analogj/scrutiny
 
-go 1.20
+go 1.24.0
 
 require (
 	github.com/analogj/go-util v0.0.0-20190301173314-5295e364eb14
@@ -19,7 +19,7 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli/v2 v2.2.0
-	golang.org/x/sync v0.3.0
+	golang.org/x/sync v0.19.0
 	gorm.io/gorm v1.23.5
 )
 
